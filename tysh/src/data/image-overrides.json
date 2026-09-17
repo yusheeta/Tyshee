@@ -1,0 +1,4 @@
+{
+  "_comment": "Hand-pick Unsplash photo ids per department.category, e.g. \"women.dresses\": [\"photo-1509631179647-0177331693ae\"]. Ids here replace the generator's built-in pool for that slot. Run `npm run catalog` afterwards.",
+  "pools": {}
+}

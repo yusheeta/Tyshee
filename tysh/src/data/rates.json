@@ -1,0 +1,13 @@
+{
+  "base": "USD",
+  "asOf": "2026-09-17",
+  "source": "static snapshot; refresh with `npm run rates:update` or set RATES_URL for live rates",
+  "rates": {
+    "USD": 1,
+    "INR": 84.6,
+    "GBP": 0.78,
+    "EUR": 0.92,
+    "JPY": 148.2,
+    "AED": 3.6725
+  }
+}

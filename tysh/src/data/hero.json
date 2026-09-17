@@ -1,0 +1,10 @@
+{
+  "_comment": "Homepage hero. Swap `id` for any Unsplash photo id (see docs/PHOTOGRAPHY.md). `focal` is the CSS object-position for the crop; `tone` is the placeholder colour while the photo loads.",
+  "id": "photo-1509631179647-0177331693ae",
+  "alt": "Woman in a flowing white dress in a sunlit countryside meadow",
+  "crop": "faces,entropy",
+  "focal": "50% 35%",
+  "tone": "#C9C0A8",
+  "eyebrow": "Autumn 2026",
+  "headline": ["Quiet pieces,", "made slowly."]
+}
