@@ -1,0 +1,61 @@
+name: TYSH storefront CI
+
+on:
+  push:
+    paths: ["tysh/**", ".github/workflows/tysh-ci.yml"]
+  pull_request:
+    paths: ["tysh/**", ".github/workflows/tysh-ci.yml"]
+
+defaults:
+  run:
+    working-directory: tysh
+
+jobs:
+  verify:
+    name: Typecheck · lint · build · e2e · Lighthouse
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tysh/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - name: Catalogue is deterministic
+        run: npm run catalog && git diff --exit-code -- src/data/products.json
+      - name: Build (production origin)
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SITE_URL: http://localhost:3100
+      - name: Start & smoke test (test gateway)
+        run: |
+          npx next start -p 3100 & echo $! > server.pid
+          for i in $(seq 1 60); do curl -sf http://localhost:3100/ > /dev/null && break; sleep 1; done
+          npm run test:e2e -- --base=http://localhost:3100
+          kill "$(cat server.pid)"
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+      - name: Verify Unsplash photo ids resolve
+        run: npm run images:verify
+        continue-on-error: true
+      - name: Lighthouse (mobile + desktop, mock image origin)
+        run: npm run lighthouse
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: tysh/lighthouse/
+      - name: Enforce performance budget (≥ 90 on every audited page)
+        run: |
+          node -e "
+            const rows = require('./lighthouse/summary.json');
+            const bad = rows.filter(r => r.performance < 90);
+            console.table(rows.map(r => ({ page: r.page, device: r.formFactor, perf: r.performance, lcp: Math.round(r.lcp), cls: r.cls.toFixed(3) })));
+            if (bad.length) { console.error('Below budget:', bad.map(r => r.page + '/' + r.formFactor).join(', ')); process.exit(1); }
+          "

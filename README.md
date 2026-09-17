@@ -1,3 +1,5 @@
+> **Also in this workspace:** [`tysh/`](tysh/) — a luxury e-commerce storefront (Next.js 16, 200-product catalogue, Stripe test-mode checkout, accounts, in-browser personal colour analysis) built around image performance. See [`tysh/README.md`](tysh/README.md).
+
 # Steady Books: problemsetter package
 
 | File | Purpose |
