@@ -1,0 +1,38 @@
+name: Loadline CI
+
+on:
+  push:
+    paths: ["loadline/**", ".github/workflows/loadline-ci.yml"]
+  pull_request:
+    paths: ["loadline/**", ".github/workflows/loadline-ci.yml"]
+
+defaults:
+  run:
+    working-directory: loadline
+
+jobs:
+  test:
+    name: vet · race-enabled tests against Postgres 16
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 2s --health-timeout 5s --health-retries 20
+        ports: ["5432:5432"]
+    env:
+      LOADLINE_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable
+      LOADLINE_TEST_REQUIRE_DB: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: loadline/go.mod
+          cache-dependency-path: loadline/go.sum
+      - run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
+      - run: go vet ./...
+      - run: go test -race -count=1 ./...
